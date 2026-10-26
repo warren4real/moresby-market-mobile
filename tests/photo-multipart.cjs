@@ -1,0 +1,7 @@
+const {test}=require('node:test');const assert=require('node:assert/strict');const fs=require('node:fs');const vm=require('node:vm');const ts=require('typescript');
+// Exercise this installed Expo version's real multipart serializer. Native File
+// I/O is represented by its documented bytes() interface, not a URI-only object.
+const m={exports:{}};vm.runInNewContext(ts.transpileModule(fs.readFileSync('node_modules/expo/src/winter/fetch/convertFormData.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText,{module:m,exports:m.exports,require:()=>({blobToArrayBufferAsync:b=>b.arrayBuffer()}),Blob,TextEncoder,Uint8Array});
+const form=photo=>({entries:()=>[['listing','{"title":"Camera test"}'],['photo',photo]]});
+test('Expo serializer reproduces the old URI-only upload failure',async()=>{await assert.rejects(m.exports.convertFormDataAsync(form({uri:'file:///camera.jpg',name:'listing.jpg',type:'image/jpeg'})),/Unsupported FormDataPart/);});
+test('Expo serializer includes real photo bytes and listing details for a File-compatible part',async()=>{const photo={name:'listing.jpg',type:'image/jpeg',bytes:async()=>new Uint8Array([255,216,255,217])};const result=await m.exports.convertFormDataAsync(form(photo),'test-boundary');const body=Buffer.from(result.body);assert.ok(body.includes(Buffer.from([255,216,255,217])));assert.ok(body.includes(Buffer.from('Camera test')));assert.ok(body.includes(Buffer.from('filename="listing.jpg"')));assert.equal(result.boundary,'test-boundary');});

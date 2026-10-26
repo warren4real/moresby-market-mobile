@@ -23,6 +23,19 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "scheme": "moresbymarket"
+    "scheme": "moresbymarket",
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Choose photos of the items you want to list on Moresby Market.",
+          "cameraPermission": "Take photos of items and properties you want to list on Moresby Market.",
+          "microphonePermission": false
+        }
+      ],
+      "expo-secure-store",
+      "expo-font",
+      "expo-status-bar"
+    ]
   }
 }
